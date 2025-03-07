@@ -17,7 +17,7 @@ void setup() {
     pinMode(SENSOR_PINS[i], INPUT_PULLUP);
   }
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Sensor Monitoring Started...");
 }
 
@@ -35,15 +35,14 @@ void loop() {
 
       if (!sensorStates[i]) {
         anySensorBroken = true;  // If any sensor is broken, set flag
-        count++;
+        
       }
     }
-
+    if(anySensorBroken)
+      count++;
     lastStates[i] = sensorStates[i];  // Update last state
   }
 
-  // Turn LED on if any sensor is broken, off otherwise
-  //digitalWrite(LEDPIN, anySensorBroken ? HIGH : LOW);
   
- // delay(10);  // Small delay to reduce noise
+  
 }
