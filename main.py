@@ -104,12 +104,12 @@ bucket_pos = "unknown"
 # Send commands and wait for motion to complete
 robot.send("set_digital_output(1,OFF)")
 
-robot.send(f"movej({start_pos}, v=15, a=20)")
+robot.send(f"movej({start_pos}, v=25, a=20)")
 
-#Moving and picking up the accessorie bag and placing it in the bucket
+# Moving and picking up the accessorie bag and placing it in the bucket
 # robot.send(f"movej({acces_pos}, v=10, a=20)")
 # robot.send(f"amovej({acces_pos + ()}, v=10, a=20)")
-# robot.force(5)  # Will check the force on the robot and will go further when the force is met
+# robot.force(5)  # Will check the force on the robot and will go further when the force is met (when the arm is on the bag)
 #
 # robot.send("stop(DR_QSTOP)")  # Stop the robot
 #
@@ -117,8 +117,8 @@ robot.send(f"movej({start_pos}, v=15, a=20)")
 #
 # time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
 # # Moving to the bucket
-# #robot.send(f"movej({bucketpos}, v=10, a=20)")
-# #robot.send(f"movej({bucketpos + ()}, v=10, a=20)")
+# #robot.send(f"movej({bucket_pos}, v=10, a=20)")
+# #robot.send(f"movej({bucket_pos + ()}, v=10, a=20)")
 
 robot.send(f"movej({lid_pos}, v=25, a=20)")
 
@@ -134,9 +134,12 @@ time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
 
 robot.send(f"movej({lid_pos}, v=10, a=20)")
 
-# robot.send(f"movej({bucketpos}, v=10, a=20)")
-# robot.send(f"movej({bucketpos + ()}, v=10, a=20)")
+# Moving the lid to the bucket and placing it there
+# robot.send(f"movej({bucket_pos}, v=10, a=20)")
+# robot.send(f"movej({bucket_pos + ()}, v=10, a=20)") # Moving it down into position
 robot.send("set_digital_output(1,OFF)")
+# time.sleep(1)
+# robot.send(f"movej({bucket_pos}, v=10, a=20)")
 
 robot.send(f"movej({start_pos}, v=15, a=20)")
 
