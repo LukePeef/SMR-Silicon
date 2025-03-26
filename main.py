@@ -82,12 +82,14 @@ class DoosanRobot:
 
             # Receive the response from the robot
             response = self.receive()
+            # robot.send("get_tool_force()")  # Get forces in tool reference frame
+            # force_values = self.receive()
 
             # Check if the force condition is met
             if response == "0":
                 check = False
                 print("Force condition met!")
-            time.sleep(1)
+            time.sleep(0.1)
 
 
 # Create instance and connect to the robot
@@ -108,8 +110,8 @@ robot.send(f"movej({start_pos}, v=25, a=20)")
 
 # Moving and picking up the accessorie bag and placing it in the bucket
 # robot.send(f"movej({acces_pos}, v=10, a=20)")
-# robot.send(f"amovej({acces_pos + ()}, v=10, a=20)")
-# robot.force(5)  # Will check the force on the robot and will go further when the force is met (when the arm is on the bag)
+# robot.send(f"amovej(addto({acces_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
+# robot.force(3)  # Will check the force on the robot and will go further when the force is met (when the arm is on the bag)
 #
 # robot.send("stop(DR_QSTOP)")  # Stop the robot
 #
@@ -124,7 +126,7 @@ robot.send(f"movej({start_pos}, v=25, a=20)")
 robot.send(f"movej({lid_pos}, v=25, a=20)")
 robot.send(f"amovej(addto({lid_pos}, [0, -28, -2, -2, 30, 0]), v=5, a=20)")  # in the actual situ only the Z axis will have to move down.
 
-robot.force(2)  # Will check the force on the robot and will go further when the force is met
+robot.force(3)  # Will check the force on the robot and will go further when the force is met
 
 robot.send("stop(DR_QSTOP)")  # Stop the robot
 
