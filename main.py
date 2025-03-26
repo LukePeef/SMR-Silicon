@@ -118,14 +118,13 @@ robot.send(f"movej({start_pos}, v=25, a=20)")
 # time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
 # # Moving to the bucket
 # #robot.send(f"movej({bucket_pos}, v=10, a=20)")
-# #robot.send(f"movej({bucket_pos + ()}, v=10, a=20)")
+# #robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
 # robot.send("set_digital_output(1,OFF)")
 
 robot.send(f"movej({lid_pos}, v=25, a=20)")
+robot.send(f"amovej(addto({lid_pos}, [0, -28, -2, -2, 30, 0]), v=5, a=20)")  # in the actual situ only the Z axis will have to move down.
 
-robot.send(f"amovej({downlid_pos}, v=5, a=20)")
-
-robot.force(3)  # Will check the force on the robot and will go further when the force is met
+robot.force(2)  # Will check the force on the robot and will go further when the force is met
 
 robot.send("stop(DR_QSTOP)")  # Stop the robot
 
@@ -137,7 +136,7 @@ robot.send(f"movej({lid_pos}, v=10, a=20)")
 
 # Moving the lid to the bucket and placing it there
 # robot.send(f"movej({bucket_pos}, v=10, a=20)")
-# robot.send(f"movej({bucket_pos + ()}, v=10, a=20)") # Moving it down into position
+# robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=5, a=20)") # Moving it down into position
 robot.send("set_digital_output(2,OFF)")
 # time.sleep(1)
 # robot.send(f"movej({bucket_pos}, v=10, a=20)")
