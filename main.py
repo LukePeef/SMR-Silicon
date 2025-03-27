@@ -1,4 +1,5 @@
 import socket
+import serial
 import logging
 import time
 import re
@@ -92,15 +93,16 @@ class DoosanRobot:
             time.sleep(0.1)
 
 
+arduino = serial.Serial('COM11', 9600, timeout=1)  # Connect to Arduino
+
 # Create instance and connect to the robot
 robot = DoosanRobot()
 robot.connect()
 
 # Positions
-start_pos = "posj([181.3, 5.4, -144.5, -355.1, 46.4, -88.2])"
-acces_pos = "unknown"
-lid_pos = "posj([222.3, -9.9, -154.2, -356.8, 69.8, -88.2])"
-downlid_pos = "posj([222.8, -38.0, -156.3, -358.2, 100.3, -88.2])"
+start_pos = "posj([177.3, 4.8, -133.1, -358.2, -50.4, -88.2])"
+access_pos = "unknown"
+lid_pos = "posj([222.2, -6.9, -138.5, -358.0, -37.7, -88.2])"
 bucket_pos = "unknown"
 
 # Send commands and wait for motion to complete
@@ -108,42 +110,50 @@ robot.send("set_digital_output(1,OFF)")
 
 robot.send(f"movej({start_pos}, v=25, a=20)")
 
-# Moving and picking up the accessorie bag and placing it in the bucket
-# robot.send(f"movej({acces_pos}, v=10, a=20)")
-# robot.send(f"amovej(addto({acces_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
-# robot.force(3)  # Will check the force on the robot and will go further when the force is met (when the arm is on the bag)
-#
-# robot.send("stop(DR_QSTOP)")  # Stop the robot
-#
-# robot.send("set_digital_output(1,ON)")
-#
-# time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
-# # Moving to the bucket
-# #robot.send(f"movej({bucket_pos}, v=10, a=20)")
-# #robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
-# robot.send("set_digital_output(1,OFF)")
+while True:
 
-robot.send(f"movej({lid_pos}, v=25, a=20)")
-robot.send(f"amovej(addto({lid_pos}, [0, -28, -2, -2, 30, 0]), v=5, a=20)")  # in the actual situ only the Z axis will have to move down.
+    if arduino.in_waiting > 0:
+        count_value = arduino.readline().decode().strip()
+        print(f"Arduino Count: {count_value}")
 
-robot.force(3)  # Will check the force on the robot and will go further when the force is met
+        if int(count_value) == 5:  # If count reaches 10
+            time.sleep(1)
+            # Moving and picking up the accessorie bag and placing it in the bucket
+            # robot.send(f"movej({acces_pos}, v=10, a=20)")
+            # robot.send(f"amovej(addto({acces_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
+            # robot.force(3)  # Will check the force on the robot and will go further when the force is met (when the arm is on the bag)
+            #
+            # robot.send("stop(DR_QSTOP)")  # Stop the robot
+            #
+            # robot.send("set_digital_output(1,ON)")
+            #
+            # time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
+            # # Moving to the bucket
+            # #robot.send(f"movej({bucket_pos}, v=10, a=20)")
+            # #robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
+            # robot.send("set_digital_output(1,OFF)")
 
-robot.send("stop(DR_QSTOP)")  # Stop the robot
+            robot.send(f"movej({lid_pos}, v=25, a=20)")
+            robot.send(f"amovej(addto({lid_pos}, [0, -25, 0, 0, 0, 0]), v=5, a=20)")  # in the actual situ only the Z axis will have to move down.
 
-robot.send("set_digital_output(2,ON)")
+            robot.force(3)  # Will check the force on the robot and will go further when the force is met
 
-time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
+            robot.send("stop(DR_QSTOP)")  # Stop the robot
 
-robot.send(f"movej({lid_pos}, v=10, a=20)")
+            robot.send("set_digital_output(2,ON)")
 
-# Moving the lid to the bucket and placing it there
-# robot.send(f"movej({bucket_pos}, v=10, a=20)")
-# robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=5, a=20)") # Moving it down into position
-robot.send("set_digital_output(2,OFF)")
-# time.sleep(1)
-# robot.send(f"movej({bucket_pos}, v=10, a=20)")
+            time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
 
-robot.send(f"movej({start_pos}, v=15, a=20)")
+            robot.send(f"movej({lid_pos}, v=10, a=20)")
+
+            # Moving the lid to the bucket and placing it there
+            # robot.send(f"movej({bucket_pos}, v=10, a=20)")
+            # robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=5, a=20)") # Moving it down into position
+            robot.send("set_digital_output(2,OFF)")
+            # time.sleep(1)
+            # robot.send(f"movej({bucket_pos}, v=10, a=20)")
+
+            robot.send(f"movej({start_pos}, v=15, a=20)")
 
 
 # Close the connection
