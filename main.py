@@ -99,12 +99,13 @@ arduino = serial.Serial('COM11', 9600, timeout=1)  # Connect to Arduino
 robot = DoosanRobot()
 robot.connect()
 
-# Positions
+# Predetermined variables, should be edited with care. n
 start_pos = "posj([177.3, 4.8, -133.1, -358.2, -50.4, -88.2])"
 access_pos = "unknown"
 lid_pos = "posj([222.2, -6.9, -138.5, -358.0, -37.7, -88.2])"
 bucket_pos = "unknown"
 
+count_amount = 5
 # Send commands and wait for motion to complete
 robot.send("set_digital_output(1,OFF)")
 
@@ -116,8 +117,7 @@ while True:
         count_value = arduino.readline().decode().strip()
         print(f"Arduino Count: {count_value}")
 
-        if int(count_value) == 5:  # If count reaches 10
-            time.sleep(1)
+        if int(count_value % count_amount) == count_amount:  # If count reaches 10
             # Moving and picking up the accessorie bag and placing it in the bucket
             # robot.send(f"movej({acces_pos}, v=10, a=20)")
             # robot.send(f"amovej(addto({acces_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
