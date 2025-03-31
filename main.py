@@ -2,8 +2,8 @@ import socket
 import serial
 import logging
 import time
+import ast
 import re
-
 
 class DoosanRobot:
     def __init__(self):
@@ -74,50 +74,64 @@ class DoosanRobot:
                 self.logger.info("Digital output on.")
                 break
 
-    def force(self, force):
+    def force(self, force, target_posj):
         """Waits until the given force is detected on the robot."""
         check = True
+
         while check:
-            # Send the check_force_condition command
+            # Check force condition
             self.send(f"check_force_condition(axis=DR_AXIS_Z, max={force}, ref=DR_TOOL)")
+            response = self.receive()  # Ensure clean response
 
-            # Receive the response from the robot
-            response = self.receive()
-            # robot.send("get_tool_force()")  # Get forces in tool reference frame
-            # force_values = self.receive()
-
-            # Check if the force condition is met
-            if response == "0":
-                check = False
-                print("Force condition met!")
+            # Get current joint position
+            self.send("get_current_posj()")
             time.sleep(0.1)
 
+            pos = self.receive()
+            pos = eval(pos)
+            posj_formatted = f"posj({', '.join(map(str, pos))})"
 
-arduino = serial.Serial('COM11', 9600, timeout=1)  # Connect to Arduino
+            # Force condition met
+            if response == "0":
+                print("Force condition met!")
+                break
+
+            # Position reached without force detection
+            if posj_formatted == target_posj:
+                print("No force detected, position reached!")
+                return 1
+
+            time.sleep(0.1)  # Small delay to avoid excessive checking
+
+
+# arduino = serial.Serial('COM11', 9600, timeout=1)  # Connect to Arduino
+
+# Pistons are connected at D/O 1/2 and 9/10
 
 # Create instance and connect to the robot
 robot = DoosanRobot()
 robot.connect()
 
-# Predetermined variables, should be edited with care. n
-start_pos = "posj([177.3, 4.8, -133.1, -358.2, -50.4, -88.2])"
+# Predetermined variables, should be edited with care.
+start_pos = "posj(-1.2, 25.0, -102.6, 0.3, -97.6, -90.3)"
 access_pos = "unknown"
-lid_pos = "posj([222.2, -6.9, -138.5, -358.0, -37.7, -88.2])"
+lid_pos = "posj(-57.7, -2.3, -85.3, -1.1, -91.6, -90.3)"
+down_pos = "posj(-61.2, -19.8, -113.2, -1.1, -44.4, -90.3)"
 bucket_pos = "unknown"
 
 count_amount = 5
 # Send commands and wait for motion to complete
 robot.send("set_digital_output(1,OFF)")
 
-robot.send(f"movej({start_pos}, v=25, a=20)")
+robot.send(f"movej({start_pos}, v=10, a=20)")
 
 while True:
 
-    if arduino.in_waiting > 0:
-        count_value = arduino.readline().decode().strip()
-        print(f"Arduino Count: {count_value}")
-
-        if int(count_value % count_amount) == count_amount:  # If count reaches 10
+    # if arduino.in_waiting > 0:
+    #     count_value = arduino.readline().decode().strip()
+    #     print(f"Arduino Count: {count_value}")
+    #
+    #     if int(count_value % count_amount) == 0:  # If count reaches 10
             # Moving and picking up the accessorie bag and placing it in the bucket
             # robot.send(f"movej({acces_pos}, v=10, a=20)")
             # robot.send(f"amovej(addto({acces_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
@@ -133,18 +147,23 @@ while True:
             # #robot.send(f"movej(addto({bucket_pos}, [0,0,-20,0,0,0]), v=10, a=20)")
             # robot.send("set_digital_output(1,OFF)")
 
-            robot.send(f"movej({lid_pos}, v=25, a=20)")
-            robot.send(f"amovej(addto({lid_pos}, [0, -25, 0, 0, 0, 0]), v=5, a=20)")  # in the actual situ only the Z axis will have to move down.
-
-            robot.force(3)  # Will check the force on the robot and will go further when the force is met
-
-            robot.send("stop(DR_QSTOP)")  # Stop the robot
-
-            robot.send("set_digital_output(2,ON)")
-
-            time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
-
             robot.send(f"movej({lid_pos}, v=10, a=20)")
+            robot.send(f"amovej({down_pos}, v=5, a=20)")  # in the actual situ only the Z axis will have to move down.
+
+            if robot.force(10, down_pos) == 1:  # Will check the force on the robot and will go further when the force is met
+                robot.send(f"movej({lid_pos}, v=10, a=20)")
+                # go to different pos and go down there
+                # robot.send(f"movej(addto(")
+                # robot.send(f"amovej({down_pos}, v=5, a=20)")
+                # robot.force(10, down_pos)
+            else:
+                robot.send("stop(DR_QSTOP)")  # Stop the robot
+
+                robot.send("set_digital_output(2,ON)")
+
+                time.sleep(3)  # Wait for 3 seconds to guarantee a good suction
+
+            robot.send(f"movej({lid_pos}, v=5, a=20)")
 
             # Moving the lid to the bucket and placing it there
             # robot.send(f"movej({bucket_pos}, v=10, a=20)")
@@ -153,7 +172,7 @@ while True:
             # time.sleep(1)
             # robot.send(f"movej({bucket_pos}, v=10, a=20)")
 
-            robot.send(f"movej({start_pos}, v=15, a=20)")
+            robot.send(f"movej({start_pos}, v=10, a=20)")
 
 
 # Close the connection
